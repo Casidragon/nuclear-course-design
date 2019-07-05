@@ -45,86 +45,46 @@ POINTS_NUMBER = INNER_POINTS_NUMBER + SURFACE_POINTS_NUMBER + OUTSIDE_POINTS_NUM
 
 FILE_NAME = ''
 
-class Point():
-    x = 0.0
-    y = 0.0
-
-    def __init__(self, x = 0.0, y = 0.0):
-        self.x = x
-        self.y = y
-    
-    def __str__(self):
-        return '{:.4f},{:.4f}'.format(self.x, self.y)
-    
-    def x(self):
-        return self.x
-
-    def y(self):
-        return self.y
-    
-    def value(self):
-        return([self.x,self.y])
-
 class Points():
-    inner_points = list()
-    outside_points = list()
+    inner_points = np.array((2,1))
+    outside_points = np.array((2,1))
 
-    up_points = list()
-    down_points = list()
-    left_points = list()
-    right_points = list()
+    up_points = np.array((2,1))
+    down_points = np.array((2,1))
+    left_points = np.array((2,1))
+    right_points = np.array((2,1))
 
-    expect_outside_points = list()
-    points = list()
+    expect_outside_points = np.array((2,1))
+    points = np.array((2,1))
 
-    expect_outside_points_list = list()
-    expect_outside_points_array = np.zeros((1,1))
-
-    outside_points_list = list()
-    outside_points_array = np.zeros((1,1))
-
-    points_list = list()
-    points_array = np.zeros((1,1))
 
     def __init__(self):
         pass
 
-    def update(self):
-        self.expect_outside_points = (self.inner_points + self.left_points + self.down_points + self.right_points + self.up_points)
-        self.points = self.expect_outside_points + self.outside_points
+    def SetPoint(self, innerPointNum = 4, surfacePointNum = 4, outsidePointNum = 4):
 
-        self.expect_outside_points_list = [self.expect_outside_points[i].value() for i in range(EXPECT_OUTSIDE_POINTS_NUMBER)]
-        self.expect_outside_points_array = np.array(self.expect_outside_points_list) 
+        self.inner_points = [self.creatPoint('inner') for i in range(innerPointNum)]
+        self.inner_points = np.array(self.inner_points)        
 
-        self.outside_points_list = [self.outside_points[i].value() for i in range(OUTSIDE_POINTS_NUMBER)]
-        self.outside_points_array = np.array(self.outside_points_list)
+        self.left_points = [(np.array([0, self.creatPoint('surface')])) for i in range(round(surfacePointNum / 4))]
+        self.left_points = np.array(self.left_points)
+        
+        self.down_points = [(np.array([self.creatPoint('surface'), 0])) for i in range(round(surfacePointNum / 4))]
+        self.down_points = np.array(self.down_points)
 
-        self.points_list = [self.points[i].value() for i in range(POINTS_NUMBER)]
-        self.points_array = np.array(self.points_list)
+        self.right_points = [np.array([a_constant, self.creatPoint('surface')]) for i in range(round(surfacePointNum / 4))]
+        self.right_points = np.array(self.down_points)
 
-class PointProcess(Point):
+        self.up_points = [(np.array([self.creatPoint('surface'), a_constant])) for i in range(surfacePointNum - 3 * round(surfacePointNum / 4))]
+        self.up_points = np.array(self.up_points)
 
-    def __inif__(self):
-        pass
+        self.outside_points = [self.creatPoint('outside') for i in range(outsidePointNum)]
+        self.outside_points = np.array(self.outside_points) 
 
-    def setPoint(self, innerPointNum = 4, surfacePointNum = 4, outsidePointNum = 4):
+        self.expect_outside_points = np.concatenate((self.inner_points, self.left_points, self.down_points, self.right_points, self.up_points))
+        self.points = np.concatenate((self.expect_outside_points,self.outside_points))
 
-        points = Points()
-
-        points.inner_points = [self.creatPoint('inner') for i in range(innerPointNum)]
-
-        points.left_points = [(Point(0, self.creatPoint('surface'))) for i in range(round(surfacePointNum / 4))]
-        points.down_points = [(Point(self.creatPoint('surface'), 0)) for i in range(round(surfacePointNum / 4))]
-        points.right_points = [Point(a_constant, self.creatPoint('surface')) for i in range(round(surfacePointNum / 4))]
-        points.up_points = [(Point(self.creatPoint('surface'), a_constant)) for i in range(surfacePointNum - 3 * round(surfacePointNum / 4))]
-
-        points.outside_points = [self.creatPoint('outside') for i in range(outsidePointNum)]
-                
-
-        points.update()
-
-        return(points)
-
+        return(self)
 
     def creatPoint(self, pointType):
         ''' 
@@ -135,7 +95,8 @@ class PointProcess(Point):
         if pointType == 'inner':
             x = np.random.rand() * a_constant
             y = np.random.rand() * a_constant
-            return(Point(x, y))
+            
+            return(np.array([x, y]))
         
         if pointType == 'surface':
             return(np.random.rand() * a_constant)
@@ -147,9 +108,10 @@ class PointProcess(Point):
             y = np.random.rand() * 10 * a_constant - 5 * a_constant
             if 0 <= y <= a_constant:
                 y -= a_constant
-            return(Point(x, y))
+            return(np.array([x, y]))
 
-class matrixProcess(Point):
+
+class matrixProcess():
     points = Points()
     c = 1.0
 
@@ -168,7 +130,6 @@ class matrixProcess(Point):
     def CalculateKDD(self):
 
         c = self.c
-
 
         matrix_square = np.sum(self.points.expect_outside_points_array ** 2, axis=1).reshape(EXPECT_OUTSIDE_POINTS_NUMBER,1)
         matrix_square_sum = matrix_square + matrix_square.T
@@ -436,7 +397,8 @@ class DrawAndData():
 
 def main():   
     #initial_time = time.time()
-    initial_points = PointProcess().setPoint(INNER_POINTS_NUMBER,SURFACE_POINTS_NUMBER,OUTSIDE_POINTS_NUMBER)
+    initial_points = Points().SetPoint(INNER_POINTS_NUMBER,SURFACE_POINTS_NUMBER,OUTSIDE_POINTS_NUMBER)
+ 
 
     draw = DrawAndData(initial_points)
     draw.PlotRandomPoint()
@@ -478,11 +440,6 @@ def main():
         #print(lamda)
 
         #draw.LamdaOutput(lamda[0][0])
-        '''
-        lamda_output = threading.Thread(target=draw.LamdaOutput,args=(lamda[0][0],))
-        lamda_output.start()
-        lamda_output.join()        
-        '''
 
         f_matrix_before = f_matrix
         a_matrix_before = a_matrix
