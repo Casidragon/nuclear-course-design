@@ -37,9 +37,9 @@ init_lamda = 1.0
 
 #points number
 
-INNER_POINTS_NUMBER = 400
-SURFACE_POINTS_NUMBER = 60
-OUTSIDE_POINTS_NUMBER = 60
+INNER_POINTS_NUMBER = 4
+SURFACE_POINTS_NUMBER = 4
+OUTSIDE_POINTS_NUMBER = 4
 EXPECT_OUTSIDE_POINTS_NUMBER = INNER_POINTS_NUMBER + SURFACE_POINTS_NUMBER
 POINTS_NUMBER = INNER_POINTS_NUMBER + SURFACE_POINTS_NUMBER + OUTSIDE_POINTS_NUMBER
 
@@ -131,9 +131,9 @@ class matrixProcess():
 
         c = self.c
 
-        matrix_square = np.sum(self.points.expect_outside_points_array ** 2, axis=1).reshape(EXPECT_OUTSIDE_POINTS_NUMBER,1)
+        matrix_square = np.sum(self.points.expect_outside_points ** 2, axis=1).reshape(EXPECT_OUTSIDE_POINTS_NUMBER,1)
         matrix_square_sum = matrix_square + matrix_square.T
-        matrix_dot = np.dot(self.points.expect_outside_points_array,self.points.expect_outside_points_array.T)
+        matrix_dot = np.dot(self.points.expect_outside_points,self.points.expect_outside_points.T)
         matrix_minus_squere_sum = matrix_square_sum - 2 * matrix_dot
         kdd = -D_constant * (matrix_minus_squere_sum + 2 * c ** 2)/(matrix_minus_squere_sum + c ** 2) ** 1.5 + Sigma_r * (matrix_minus_squere_sum + c ** 2) ** 0.5
 
@@ -144,10 +144,10 @@ class matrixProcess():
 
         c = self.c
 
-        matrix_square_expect_outside_points = np.sum(self.points.expect_outside_points_array ** 2, axis=1).reshape(EXPECT_OUTSIDE_POINTS_NUMBER,1)
-        matrix_square_outside_points = np.sum(self.points.outside_points_array ** 2, axis=1).reshape(1,OUTSIDE_POINTS_NUMBER)
+        matrix_square_expect_outside_points = np.sum(self.points.expect_outside_points ** 2, axis=1).reshape(EXPECT_OUTSIDE_POINTS_NUMBER,1)
+        matrix_square_outside_points = np.sum(self.points.outside_points ** 2, axis=1).reshape(1,OUTSIDE_POINTS_NUMBER)
         matrix_square_sum = matrix_square_expect_outside_points + matrix_square_outside_points
-        matrix_dot = np.dot(self.points.expect_outside_points_array,self.points.outside_points_array.T)
+        matrix_dot = np.dot(self.points.expect_outside_points,self.points.outside_points.T)
         matrix_minus_squere_sum = matrix_square_sum - 2 * matrix_dot
         kde = -D_constant * (matrix_minus_squere_sum + 2 * c ** 2)/(matrix_minus_squere_sum + c ** 2) ** 1.5 + Sigma_r * (matrix_minus_squere_sum + c ** 2) ** 0.5
         self.KDE = kde
@@ -159,36 +159,36 @@ class matrixProcess():
         for i in range(SURFACE_POINTS_NUMBER):
             for j in range(EXPECT_OUTSIDE_POINTS_NUMBER):
                 if i < len(self.points.left_points):
-                    xi = self.points.left_points[i].x
-                    yi = self.points.left_points[i].y
-                    xj = self.points.expect_outside_points[j].x
-                    yj = self.points.expect_outside_points[j].y
+                    xi = self.points.left_points[i][0]
+                    yi = self.points.left_points[i][1]
+                    xj = self.points.expect_outside_points[j][0]
+                    yj = self.points.expect_outside_points[j][1]
 
                     KBD[i][j] = ((xi - xj)/(((xi - xj) ** 2 + (yi - yj) ** 2 + c ** 2) ** 0.5))
                     
 
                 if len(self.points.left_points) <= i < (len(self.points.left_points) + len(self.points.down_points)):
-                    xi = self.points.down_points[i - len(self.points.left_points)].x
-                    yi = self.points.down_points[i - len(self.points.left_points)].y
-                    xj = self.points.expect_outside_points[j].x
-                    yj = self.points.expect_outside_points[j].y
+                    xi = self.points.down_points[i - len(self.points.left_points)][0]
+                    yi = self.points.down_points[i - len(self.points.left_points)][1]
+                    xj = self.points.expect_outside_points[j][0]
+                    yj = self.points.expect_outside_points[j][1]
 
                     KBD[i][j] = ((yi - yj)/(((xi - xj) ** 2 + (yi - yj) ** 2 + c ** 2) ** 0.5))
                     
 
                 if 0 <= (i - (len(self.points.left_points) + len(self.points.down_points))) < len(self.points.right_points):
-                    xi = self.points.right_points[(i - (len(self.points.left_points) + len(self.points.down_points)))].x
-                    yi = self.points.right_points[(i - (len(self.points.left_points) + len(self.points.down_points)))].y
-                    xj = self.points.expect_outside_points[j].x
-                    yj = self.points.expect_outside_points[j].y
+                    xi = self.points.right_points[(i - (len(self.points.left_points) + len(self.points.down_points)))][0]
+                    yi = self.points.right_points[(i - (len(self.points.left_points) + len(self.points.down_points)))][1]
+                    xj = self.points.expect_outside_points[j][0]
+                    yj = self.points.expect_outside_points[j][1]
 
                     KBD[i][j] = (((xi - xj) ** 2 + (yi - yj) ** 2 + c ** 2) ** 0.5)
 
                 if 0 <= (i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points))) < len(self.points.up_points):
-                    xi = self.points.up_points[(i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points)))].x
-                    yi = self.points.up_points[(i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points)))].y
-                    xj = self.points.expect_outside_points[j].x
-                    yj = self.points.expect_outside_points[j].y
+                    xi = self.points.up_points[(i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points)))][0]
+                    yi = self.points.up_points[(i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points)))][1]
+                    xj = self.points.expect_outside_points[j][0]
+                    yj = self.points.expect_outside_points[j][1]
 
                     KBD[i][j] = (((xi - xj) ** 2 + (yi - yj) ** 2 + c ** 2) ** 0.5)
         self.KBD = KBD
@@ -200,36 +200,36 @@ class matrixProcess():
         for i in range(SURFACE_POINTS_NUMBER):
             for j in range(OUTSIDE_POINTS_NUMBER):
                 if i < len(self.points.left_points):
-                    xi = self.points.left_points[i].x
-                    yi = self.points.left_points[i].y
-                    xj = self.points.outside_points[j].x
-                    yj = self.points.outside_points[j].y
+                    xi = self.points.left_points[i][0]
+                    yi = self.points.left_points[i][1]
+                    xj = self.points.outside_points[j][0]
+                    yj = self.points.outside_points[j][1]
 
                     KBE[i][j] = ((xi - xj)/(((xi - xj) ** 2 + (yi - yj) ** 2 + c ** 2) ** 0.5))
                     
 
                 if len(self.points.left_points) <= i < (len(self.points.left_points) + len(self.points.down_points)):
-                    xi = self.points.down_points[i - len(self.points.left_points)].x
-                    yi = self.points.down_points[i - len(self.points.left_points)].y
-                    xj = self.points.outside_points[j].x
-                    yj = self.points.outside_points[j].y
+                    xi = self.points.down_points[i - len(self.points.left_points)][0]
+                    yi = self.points.down_points[i - len(self.points.left_points)][1]
+                    xj = self.points.outside_points[j][0]
+                    yj = self.points.outside_points[j][1]
 
                     KBE[i][j] = ((yi - yj)/(((xi - xj) ** 2 + (yi - yj) ** 2 + c ** 2) ** 0.5))
                     
 
                 if 0 <= (i - (len(self.points.left_points) + len(self.points.down_points))) < len(self.points.right_points):
-                    xi = self.points.right_points[(i - (len(self.points.left_points) + len(self.points.down_points)))].x
-                    yi = self.points.right_points[(i - (len(self.points.left_points) + len(self.points.down_points)))].y
-                    xj = self.points.outside_points[j].x
-                    yj = self.points.outside_points[j].y
+                    xi = self.points.right_points[(i - (len(self.points.left_points) + len(self.points.down_points)))][0]
+                    yi = self.points.right_points[(i - (len(self.points.left_points) + len(self.points.down_points)))][1]
+                    xj = self.points.outside_points[j][0]
+                    yj = self.points.outside_points[j][1]
 
                     KBE[i][j] = (((xi - xj) ** 2 + (yi - yj) ** 2 + c ** 2) ** 0.5)
 
                 if 0 <= (i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points))) < len(self.points.up_points):
-                    xi = self.points.up_points[(i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points)))].x
-                    yi = self.points.up_points[(i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points)))].y
-                    xj = self.points.outside_points[j].x
-                    yj = self.points.outside_points[j].y
+                    xi = self.points.up_points[(i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points)))][0]
+                    yi = self.points.up_points[(i - (len(self.points.left_points) + len(self.points.down_points) + len(self.points.right_points)))][1]
+                    xj = self.points.outside_points[j][0]
+                    yj = self.points.outside_points[j][1]
 
                     KBE[i][j] = (((xi - xj) ** 2 + (yi - yj) ** 2 + c ** 2) ** 0.5)
         self.KBE = KBE
@@ -239,10 +239,10 @@ class matrixProcess():
         Psi_matrix = np.zeros((EXPECT_OUTSIDE_POINTS_NUMBER,POINTS_NUMBER))
         c = self.c
 
-        matrix_square = np.sum(self.points.points_array ** 2, axis=1).reshape(1,POINTS_NUMBER)
-        matrix_square_expect_outside_points = np.sum(self.points.expect_outside_points_array ** 2, axis=1).reshape(EXPECT_OUTSIDE_POINTS_NUMBER,1)
+        matrix_square = np.sum(self.points.points ** 2, axis=1).reshape(1,POINTS_NUMBER)
+        matrix_square_expect_outside_points = np.sum(self.points.expect_outside_points ** 2, axis=1).reshape(EXPECT_OUTSIDE_POINTS_NUMBER,1)
         matrix_square_sum = matrix_square + matrix_square_expect_outside_points
-        matrix_dot = np.dot(self.points.expect_outside_points_array,self.points.points_array.T)
+        matrix_dot = np.dot(self.points.expect_outside_points,self.points.points.T)
         matrix_minus_squere_sum = matrix_square_sum - 2 * matrix_dot
         
         Psi_matrix = (matrix_minus_squere_sum +  c ** 2)**0.5
@@ -297,8 +297,8 @@ def IntegrateCoefficientMatrix(initialPoints):
     integrate_matrix_list = multiprocessing.Manager().list(range(POINTS_NUMBER))
     p = pool.Pool()
     for i in range(POINTS_NUMBER):
-        xi = initialPoints.points[i].x
-        yi = initialPoints.points[i].y
+        xi = initialPoints.points[i][0]
+        yi = initialPoints.points[i][1]
         
         p.apply_async(Solve, args=(c,a,xi,yi,i,integrate_matrix_list))
     p.close()
@@ -322,8 +322,8 @@ class DrawAndData():
 
     def __init__(self, points):
         self.points = points
-        self.x_values = self.points.points_array[:,0]
-        self.y_values = self.points.points_array[:,1]
+        self.x_values = self.points.points[:,0]
+        self.y_values = self.points.points[:,1]
 
         self.x_mean = np.mean(self.x_values)
         self.y_mean = np.mean(self.y_values)
@@ -452,7 +452,7 @@ def main():
 
     draw.CalculateZ(a_matrix)
     draw.PlotHeat()
-    draw.FileOutput(lamda[0][0],iteration_flag)
+    #draw.FileOutput(lamda[0][0],iteration_flag)
 
 def FlushConstant(innerPointsNumber,surfacePointsNumber,times):
     global INNER_POINTS_NUMBER
@@ -477,12 +477,11 @@ INNER_POINTS_NUMBER_LIST = [c for c in range(50,1000,50)] + [c for c in range(10
 SURFACE_POINTS_NUMBER_LIST = [10] + [c for c in range(25,100,25)] + [c for c in range(100,4050,50)]
 for i in range(len(INNER_POINTS_NUMBER_LIST)):
     for j in range(len(SURFACE_POINTS_NUMBER_LIST)):
-        if 7 * INNER_POINTS_NUMBER_LIST[i] < SURFACE_POINTS_NUMBER_LIST[j]:
-            break
+
         for times in range(50):     
                 if __name__ == '__main__':
 
-                    FlushConstant(INNER_POINTS_NUMBER_LIST[i],SURFACE_POINTS_NUMBER_LIST[j],times)           
+                    #FlushConstant(INNER_POINTS_NUMBER_LIST[i],SURFACE_POINTS_NUMBER_LIST[j],times)           
                     initial_time = time.time()
                     main()
                     finish_time = time.time()
